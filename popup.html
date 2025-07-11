@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick FX & Margin</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Exchange Section -->
+    <div class="section">
+      <h2>Exchange</h2>
+      <div class="exchange-row">
+        <input type="number" id="fx-amount-from" placeholder="Amount" step="0.0001" min="0">
+        <div class="currency-selector">
+          <input type="text" id="fx-from" placeholder="USD" value="USD" autocomplete="off">
+          <div class="currency-dropdown" id="fx-from-dropdown"></div>
+        </div>
+      </div>
+      <div class="exchange-row">
+        <input type="number" id="fx-amount-to" placeholder="Converted" step="0.0001" min="0">
+        <div class="currency-selector">
+          <input type="text" id="fx-to" placeholder="CNY" value="CNY" autocomplete="off">
+          <div class="currency-dropdown" id="fx-to-dropdown"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Translation Section -->
+    <div class="section">
+      <h2>Translation</h2>
+      <div class="translation-header">
+        <div class="language-selector">
+          <input type="text" id="source-lang" placeholder="Detect language" value="Detect language" autocomplete="off">
+          <div class="language-dropdown" id="source-lang-dropdown"></div>
+        </div>
+        <button class="swap-button" id="swap-languages" title="Swap languages">⇄</button>
+        <div class="language-selector">
+          <input type="text" id="target-lang" placeholder="English" value="English" autocomplete="off">
+          <div class="language-dropdown" id="target-lang-dropdown"></div>
+        </div>
+      </div>
+      <div class="translation-body">
+        <div class="translation-input">
+          <textarea id="source-text" placeholder="Enter text" rows="4"></textarea>
+        </div>
+        <div class="translation-output">
+          <textarea id="target-text" placeholder="Translation" rows="4" readonly></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Margin Section -->
+    <div class="section">
+      <h2>Margin</h2>
+      <div class="profit-field">
+        <label for="profit-rate">Rate</label>
+        <input type="number" id="profit-rate" placeholder="Rate" step="0.0001" min="0">
+      </div>
+      <div class="profit-field">
+        <label for="profit-margin">Margin %</label>
+        <input type="number" id="profit-margin" placeholder="Margin %" step="0.01" min="0">
+      </div>
+      <div class="profit-field">
+        <label for="profit-quote">Quote</label>
+        <input type="number" id="profit-quote" placeholder="Quote" readonly>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 

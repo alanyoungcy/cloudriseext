@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Quick FX & Margin",
+  "version": "1.0.0",
+  "description": "Currency conversion and margin calculator for trading",
+  "permissions": [
+    "storage",
+    "windows"
+  ],
+  "host_permissions": [
+    "https://api.freecurrencyapi.com/*",
+    "https://translation.googleapis.com/*"
+  ],
+  "action": {
+    "default_title": "Quick FX & Margin"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "icons/128.png"
+  }
+} 

@@ -1,0 +1,363 @@
+/* Light mode (default) */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --border-color: #ddd;
+  --input-bg: #ffffff;
+  --section-bg: #f9f9f9;
+  --button-bg: #007bff;
+  --button-text: #ffffff;
+  --button-hover: #0056b3;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1e1e1e;
+    --text-color: #ffffff;
+    --border-color: #444;
+    --input-bg: #2d2d2d;
+    --section-bg: #252525;
+    --button-bg: #0d6efd;
+    --button-text: #ffffff;
+    --button-hover: #0b5ed7;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 100%;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+}
+
+.container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 380px;
+  margin: 0 auto;
+  min-height: calc(100vh - 32px);
+}
+
+.section {
+  background-color: var(--section-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.section h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-color);
+}
+
+/* Exchange Section */
+.exchange-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.exchange-row:last-child {
+  margin-bottom: 0;
+}
+
+.exchange-row input {
+  flex: 2;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+/* Currency Selector */
+.currency-selector {
+  flex: 1;
+  position: relative;
+}
+
+.currency-selector input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.currency-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.currency-dropdown.show {
+  display: block;
+}
+
+.currency-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.currency-option:last-child {
+  border-bottom: none;
+}
+
+.currency-option:hover {
+  background-color: var(--section-bg);
+}
+
+.currency-option.selected {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+.currency-option.selected .currency-code,
+.currency-option.selected .currency-name {
+  color: var(--button-text);
+  opacity: 1;
+}
+
+.currency-code {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.currency-name {
+  font-size: 11px;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-left: 8px;
+}
+
+/* Scrollbar styling for dropdown */
+.currency-dropdown::-webkit-scrollbar,
+.language-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.currency-dropdown::-webkit-scrollbar-track,
+.language-dropdown::-webkit-scrollbar-track {
+  background: var(--section-bg);
+}
+
+.currency-dropdown::-webkit-scrollbar-thumb,
+.language-dropdown::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.currency-dropdown::-webkit-scrollbar-thumb:hover,
+.language-dropdown::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color);
+}
+
+/* Translation Section */
+.translation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.language-selector {
+  flex: 1;
+  position: relative;
+}
+
+.language-selector input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 1001;
+  display: none;
+}
+
+.language-dropdown.show {
+  display: block;
+}
+
+.language-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.language-option:last-child {
+  border-bottom: none;
+}
+
+.language-option:hover {
+  background-color: var(--section-bg);
+}
+
+.language-option.selected {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+.swap-button {
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.swap-button:hover {
+  background-color: var(--section-bg);
+  transform: rotate(180deg);
+}
+
+.translation-body {
+  display: flex;
+  gap: 8px;
+}
+
+.translation-input,
+.translation-output {
+  flex: 1;
+}
+
+.translation-input textarea,
+.translation-output textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.translation-output textarea {
+  background-color: var(--section-bg);
+  cursor: default;
+}
+
+.translation-input textarea:focus,
+.translation-output textarea:focus {
+  outline: 2px solid var(--button-bg);
+  outline-offset: -1px;
+  border-color: var(--button-bg);
+}
+
+/* Profit Section */
+.profit-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.profit-field:last-of-type {
+  margin-bottom: 0;
+}
+
+.profit-field label {
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text-color);
+}
+
+.profit-field input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+/* Input states */
+input:focus, select:focus {
+  outline: 2px solid var(--button-bg);
+  outline-offset: -1px;
+  border-color: var(--button-bg);
+}
+
+input:read-only {
+  background-color: var(--section-bg);
+  cursor: not-allowed;
+}
+
+/* Exchange inputs should look the same since both are editable */
+#fx-amount-from, #fx-amount-to {
+  background-color: var(--input-bg);
+  cursor: text;
+}
+
+/* Remove number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+} 
