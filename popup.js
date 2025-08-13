@@ -1,6 +1,6 @@
 // API configuration
-const API_KEY = process.env.FREECURRECY_API_KEY || 'YOUR_API_KEY_HERE';
-const TRANSLATION_KEY = process.env.TRANSLATION_KEY || 'YOUR_TRANSLATION_KEY_HERE';
+const API_KEY = 'YOUR_API_KEY_HERE';
+const TRANSLATION_KEY = 'YOUR_TRANSLATION_KEY_HERE';
 const API_BASE_URL = 'https://api.freecurrencyapi.com/v1/latest';
 const TRANSLATION_API_URL = 'https://translation.googleapis.com/language/translate/v2';
 const CACHE_DURATION = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
@@ -358,18 +358,111 @@ const swapLanguages = () => {
   }
 };
 
-// Utility functions
-const formatNumber = (value) => {
-  if (!value || isNaN(value)) return '';
-  return new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 4,
-    minimumFractionDigits: 0
-  }).format(value);
+const parseNumber = (value) => {
+  // Remove commas and other formatting characters before parsing
+  const cleanValue = value.toString().replace(/,/g, '');
+  const num = parseFloat(cleanValue);
+  return isNaN(num) ? 0 : num;
 };
 
-const parseNumber = (value) => {
-  const num = parseFloat(value);
-  return isNaN(num) ? 0 : num;
+const unformatNumber = (value) => {
+  return value.replace(/,/g, '');
+};
+
+function evaluateExpression(expression) {
+  console.log('Evaluating expression:', expression);
+  
+  // Remove spaces
+  expression = expression.replace(/\s+/g, '');
+  
+  // Tokenize: numbers (with decimals) and operators
+  const tokens = expression.match(/(\d+(\.\d*)?|\.\d+|[+\-*/()])/g) || [];
+  
+  if (tokens.join('') !== expression) {
+    console.warn('Invalid characters in expression');
+    return 0;
+  }
+  
+  // Shunting-yard algorithm
+  const output = [];
+  const operators = [];
+  const precedence = { '+': 1, '-': 1, '*': 2, '/': 2 };
+  
+  tokens.forEach(token => {
+    if (!isNaN(parseFloat(token))) {
+      output.push(parseFloat(token));
+    } else if (token === '(') {
+      operators.push(token);
+    } else if (token === ')') {
+      while (operators.length && operators[operators.length - 1] !== '(') {
+        output.push(operators.pop());
+      }
+      if (operators.length && operators[operators.length - 1] === '(') {
+        operators.pop();
+      } else {
+        console.warn('Mismatched parentheses');
+        return 0;
+      }
+    } else if (['+', '-', '*', '/'].includes(token)) {
+      while (operators.length && precedence[operators[operators.length - 1]] >= precedence[token]) {
+        output.push(operators.pop());
+      }
+      operators.push(token);
+    }
+  });
+  
+  while (operators.length) {
+    if (operators[operators.length - 1] === '(') {
+      console.warn('Mismatched parentheses');
+      return 0;
+    }
+    output.push(operators.pop());
+  }
+  
+  // Evaluate RPN
+  const stack = [];
+  for (let token of output) {
+    if (typeof token === 'number') {
+      stack.push(token);
+    } else {
+      if (stack.length < 2) {
+        console.warn('Invalid expression: insufficient operands');
+        return 0;
+      }
+      const b = stack.pop();
+      const a = stack.pop();
+      switch (token) {
+        case '+': stack.push(a + b); break;
+        case '-': stack.push(a - b); break;
+        case '*': stack.push(a * b); break;
+        case '/': 
+          if (b === 0) {
+            console.warn('Division by zero');
+            return 0;
+          }
+          stack.push(a / b); 
+          break;
+      }
+    }
+  }
+  
+  if (stack.length !== 1) {
+    console.warn('Invalid expression: extra operands');
+    return 0;
+  }
+  
+  const result = stack[0];
+  console.log('Evaluation result:', result);
+  return result;
+}
+
+// Modified formatNumber to accept maxDecimals
+const formatNumber = (value, maxDecimals = 4) => {
+  if (!value || isNaN(value)) return '';
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: maxDecimals,
+    minimumFractionDigits: 0
+  }).format(value);
 };
 
 // Cache management
@@ -464,8 +557,8 @@ const updateExchangeAmount = async (sourceField = 'from') => {
     try {
       const rate = await fetchExchangeRate(fromCurrency, toCurrency);
       const amountTo = amountFrom * rate;
-      const rounded = Math.round(amountTo * 10000) / 10000; // Round to 4 decimals
-      elements.amountTo.value = formatNumber(rounded);
+      const rounded = Math.round(amountTo * 100) / 100; // Round to 2 decimals
+      elements.amountTo.value = formatNumber(rounded, 2);
     } catch (error) {
       console.error('Currency conversion error:', error);
       elements.amountTo.value = 'Error';
@@ -482,8 +575,8 @@ const updateExchangeAmount = async (sourceField = 'from') => {
     try {
       const rate = await fetchExchangeRate(toCurrency, fromCurrency);
       const amountFrom = amountTo * rate;
-      const rounded = Math.round(amountFrom * 10000) / 10000; // Round to 4 decimals
-      elements.amountFrom.value = formatNumber(rounded);
+      const rounded = Math.round(amountFrom * 100) / 100; // Round to 2 decimals
+      elements.amountFrom.value = formatNumber(rounded, 2);
     } catch (error) {
       console.error('Currency conversion error:', error);
       elements.amountFrom.value = 'Error';
@@ -504,7 +597,7 @@ const updateMarginQuote = () => {
   // Formula: quote = rate * (1 + margin/100)
   const quote = rate * (1 + margin / 100);
   const rounded = Math.round(quote * 10000) / 10000; // Round to 4 decimals
-  elements.profitQuote.value = formatNumber(rounded);
+  elements.profitQuote.value = formatNumber(rounded, 4);
 };
 
 // Language selector setup
@@ -687,24 +780,82 @@ const setupCurrencySelector = (input, dropdown, fieldType) => {
   });
 };
 
+function validateExpressionInput(event) {
+  const input = event.target;
+  let value = input.value;
+  
+  // Allow digits, decimal, operators, parentheses, spaces
+  // Remove any other characters
+  value = value.replace(/[^0-9+\-*/(). ]/g, '');
+  
+  input.value = value;
+}
+
+function setupNumberFormatting(input, maxDecimals = 4) {
+  let isFocused = false;
+  
+  input.addEventListener('focus', () => {
+    isFocused = true;
+    input.value = unformatNumber(input.value);
+  });
+  
+  input.addEventListener('blur', async () => {
+    isFocused = false;
+    let value = input.value.trim();
+    
+    // Always attempt to evaluate (in case of single number or expression)
+    const result = evaluateExpression(value);
+    console.log('Blur evaluateExpression input:', value, 'result:', result);
+    if (!isNaN(result) && isFinite(result)) {
+      value = result.toString();
+    } else if (value !== '') {
+      console.warn('Invalid input:', value);
+      value = '';
+    }
+    
+    const num = parseNumber(value);
+    if (num > 0) {
+      input.value = formatNumber(num, maxDecimals);
+    } else {
+      input.value = '';
+    }
+    
+    // Trigger update after evaluation
+    if (input === elements.amountFrom || input === elements.amountTo) {
+      await triggerCurrencyUpdate();
+    }
+  });
+  
+  input.addEventListener('input', (e) => {
+    if (isFocused) {
+      validateExpressionInput(e);
+    }
+  });
+}
+
+
 // Global flag to prevent infinite loops during programmatic updates
 let isUpdating = false;
 
 // Event listeners
 const setupEventListeners = () => {
-  // Exchange section events
-  elements.amountFrom.addEventListener('input', async (e) => {
-    if (isUpdating) return;
+  // Setup formatting for exchange fields (2 decimals)
+  setupNumberFormatting(elements.amountFrom, 2);
+  setupNumberFormatting(elements.amountTo, 2);
+
+  // Exchange section events (validation is inside setup)
+  elements.amountFrom.addEventListener('input', (e) => {
+    const value = elements.amountFrom.value.trim();
+    if (isUpdating || /[+\-*/]/.test(value)) return; // Skip if expression
     isUpdating = true;
-    await updateExchangeAmount('from');
-    isUpdating = false;
+    updateExchangeAmount('from').finally(() => { isUpdating = false; });
   });
   
-  elements.amountTo.addEventListener('input', async (e) => {
-    if (isUpdating) return;
+  elements.amountTo.addEventListener('input', (e) => {
+    const value = elements.amountTo.value.trim();
+    if (isUpdating || /[+\-*/]/.test(value)) return; // Skip if expression
     isUpdating = true;
-    await updateExchangeAmount('to');
-    isUpdating = false;
+    updateExchangeAmount('to').finally(() => { isUpdating = false; });
   });
   
   // Currency selector events
@@ -731,25 +882,15 @@ const setupEventListeners = () => {
     }
   });
   
+  // Setup formatting for profit fields (4 decimals for rate, 2 for margin)
+  setupNumberFormatting(elements.profitRate, 4);
+  setupNumberFormatting(elements.profitMargin, 2);
+
   // Profit section events
-  elements.profitRate.addEventListener('keyup', updateMarginQuote);
-  elements.profitMargin.addEventListener('keyup', updateMarginQuote);
+  elements.profitRate.addEventListener('input', updateMarginQuote);
+  elements.profitMargin.addEventListener('input', updateMarginQuote);
   
-  // Input validation - prevent negative values
-  const numberInputs = [
-    elements.amountFrom,
-    elements.amountTo,
-    elements.profitRate,
-    elements.profitMargin
-  ];
-  
-  numberInputs.forEach(input => {
-    input.addEventListener('input', (e) => {
-      if (e.target.value < 0) {
-        e.target.value = 0;
-      }
-    });
-  });
+  // Negative prevention is handled in validateNumericInput
 };
 
 // Initialize the popup
@@ -790,6 +931,14 @@ const init = () => {
   if (elements.profitRate.value) {
     updateMarginQuote();
   }
+
+  // Initial formatting
+  [elements.amountFrom, elements.amountTo, elements.profitRate, elements.profitMargin].forEach(input => {
+    const num = parseNumber(input.value);
+    if (num > 0) {
+      input.value = formatNumber(num, input.id === 'profit-rate' ? 4 : 2);
+    }
+  });
   
   console.log('Quick FX & Margin extension initialized');
 };
@@ -799,4 +948,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();
-} 
+}
